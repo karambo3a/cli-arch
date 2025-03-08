@@ -1,4 +1,4 @@
-name: Java CI with Gradle (OpenJDK)
+name: CI
 
 on:
   push:
