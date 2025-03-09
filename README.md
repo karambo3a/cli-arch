@@ -30,18 +30,8 @@ Supported operations:
 5. Pipelines
     * Support for the `|` operator to pass the output of one command as input to another
 
-## Build
+## Installation
 
-### For Linux
-
-
-### For Windows (MSVC)
-
-
-### For macOS
-
-
-## Contributing
 
 ## License
 
