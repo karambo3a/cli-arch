@@ -2,7 +2,7 @@
 ![Build Status](https://github.com/karambo3a/cli-arch/actions/workflows/ci.yaml/badge.svg)
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
-Simple command line interpreter.
+Simple CLI.
 
 Supported operations:
 
