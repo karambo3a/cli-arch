@@ -42,9 +42,30 @@ public class Command {
     public void setStdin(InputStream stdin) {
         this.stdin = stdin;
     }
+
     public void setStdout(OutputStream stdout) {
         this.stdout = stdout;
     }
+
+    // Getter for stdin and stdout (used in Executor)
+    public InputStream getStdin() {
+        return this.stdin;
+    }
+
+    public OutputStream getStdout() {
+        return this.stdout;
+    }
+
+    // Getter for command name (used in Executor)
+    public String getName() {
+        return this.name;
+    }
+
+    // Getter for command arguments (used in Executor)
+    public List<String> getArgs() {
+        return this.args;
+    }
+
     // Method to check if the command is "exit"
     public boolean isExit() {
         return "exit".equals(name);
