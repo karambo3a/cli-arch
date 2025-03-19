@@ -31,9 +31,9 @@ public class Command {
         }
         this.name = tokens.getFirst();
         this.args = List.copyOf(tokens.subList(1, tokens.size()));
-//        if (!checkNumberOfArguments()) {
-//            throw new IllegalArgumentException("Invalid number of arguments");
-//        }
+        if (!checkNumberOfArguments()) {
+            throw new IllegalArgumentException("Invalid number of arguments");
+        }
         this.stdin = System.in;
         this.stdout = System.out;
     }
@@ -63,7 +63,8 @@ public class Command {
 
         int expectedArgs = BUILTIN_COMMANDS_AND_ARG_COUNTS.get(name);
         // If expectedArgs == -1, any number of arguments is allowed
-        return expectedArgs == -1 || expectedArgs == args.size();
+        // If it is pipeline number of arguments can be one less
+        return expectedArgs == -1 || expectedArgs == args.size() || expectedArgs - 1 == args.size();
     }
 
     @Override
