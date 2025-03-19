@@ -24,21 +24,28 @@ public class Parser {
         if (tokens.size() == 1 && setVarIfNeed(tokens.getFirst(), env)) {
             return new ArrayList<>();  // Return empty list if it's just a variable assignment
         }
-        List<String> singleCommand = new ArrayList<>();
 
-        // Iterate through tokens and process commands
+        List<String> tokensAfterVars = new ArrayList<>();
         for (String token : tokens) {
+            // Replace variables with their values
+            String replaceVars = findVarsAndReplace(token, env);
+            // tokenize again because variable can contain '|' or spaces
+            tokensAfterVars.addAll(tokenize(replaceVars));
+        }
+
+        List<String> singleCommand = new ArrayList<>();
+        // Iterate through tokens and process commands
+        for (String token : tokensAfterVars) {
             if (token.equals("|")) {
                 // If we encounter a pipeline "|", create a new command and add it to the list
                 commands.add(new Command(singleCommand));
                 singleCommand.clear();
             } else {
-                // Replace variables with their values
-                String replaceVars = findVarsAndReplace(token, env);
                 // Handle quotes (escaping rules for weak and strong quotes)
-                singleCommand.add(evalQuotes(replaceVars));
+                singleCommand.add(evalQuotes(token));
             }
         }
+
         // Add the final command (if any)
         commands.add(new Command(singleCommand));
         return commands;
