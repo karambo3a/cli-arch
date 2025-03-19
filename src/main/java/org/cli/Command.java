@@ -30,10 +30,10 @@ public class Command {
             throw new IllegalArgumentException("Empty command");
         }
         this.name = tokens.getFirst();
-        this.args = tokens.subList(1, tokens.size());
-        if (!checkNumberOfArguments()) {
-            throw new IllegalArgumentException("Invalid number of arguments");
-        }
+        this.args = List.copyOf(tokens.subList(1, tokens.size()));
+//        if (!checkNumberOfArguments()) {
+//            throw new IllegalArgumentException("Invalid number of arguments");
+//        }
         this.stdin = System.in;
         this.stdout = System.out;
     }
@@ -64,5 +64,15 @@ public class Command {
         int expectedArgs = BUILTIN_COMMANDS_AND_ARG_COUNTS.get(name);
         // If expectedArgs == -1, any number of arguments is allowed
         return expectedArgs == -1 || expectedArgs == args.size();
+    }
+
+    @Override
+    public String toString() {
+        return "Command{" +
+                "name='" + name + '\'' +
+                ", args=" + args +
+                ", stdin=" + stdin +
+                ", stdout=" + stdout +
+                '}';
     }
 }
