@@ -2,6 +2,7 @@ package org.cli;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -122,9 +123,12 @@ public class ParserTest {
     @CsvSource({
             "$USER_BOB, Bob",
             "someLetters$HOME_BOB, someLetters/home/bob",
+            "\"$USER_BOB\", \"Bob\"",
+            "Hell'$USER_BOB'o, Hell'$USER_BOB'o",
             "more'quotes'for$USER_BOB\"endBнQuote\"eee, more'quotes'forBob\"endBнQuote\"eee"
     })
     void testFindVarsAndReplace_WithVariables(String token, String expect) throws InvocationTargetException, IllegalAccessException {
+        System.out.println(token);
         String result = (String) findVarsAndReplace.invoke(null, token, env);
 
         assertEquals(expect, result);
@@ -136,5 +140,86 @@ public class ParserTest {
         String result = (String) findVarsAndReplace.invoke(null, input, env);
 
         assertEquals("", result); // If variable is not set, it returns "null"
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "'Hello $USER', Hello $USER",
+            "\"Hello $USER_BOB\", Hello $USER_BOB",
+            "'$HOME_BOB' \"$USER_BOB\", $HOME_BOB $USER_BOB",
+            "letters'Hello $USER'letters, lettersHello $USERletters",
+            "aaa\"bbb\"ccc'ddd'eee, aaabbbcccdddeee"
+    })
+    void testEvalQuotes_SingleQuotes(String input, String expect) throws InvocationTargetException, IllegalAccessException {
+        String result = (String) evalQuotes.invoke(null, input);
+
+        assertEquals(expect, result);
+    }
+
+    @Test
+    void testEvalQuotes_withTabs() throws InvocationTargetException, IllegalAccessException {
+        String input = "\"Line1\\nLine2\\tTabbed\"";
+        String result = (String) evalQuotes.invoke(null, input);
+
+        assertEquals("Line1\nLine2\tTabbed", result);
+    }
+
+
+
+    @Test
+    void testParse_SingleCommand() {
+        String input = "echo hello";
+        List<Command> commands = Parser.parse(input, env);
+
+        assertEquals(1, commands.size());
+        assertEquals("echo", commands.getFirst().getName());
+        assertEquals(List.of("hello"), commands.getFirst().getArgs());
+    }
+
+    @Test
+    void testParse_Pipeline() {
+        String input = "echo hello | wc -l";
+        List<Command> commands = Parser.parse(input, env);
+
+        assertEquals(2, commands.size());
+        assertEquals("echo", commands.getFirst().getName());
+        assertEquals(List.of("hello"), commands.getFirst().getArgs());
+        assertEquals("wc", commands.get(1).getName());
+        assertEquals(List.of("-l"), commands.get(1).getArgs());
+    }
+
+    @Test
+    void testParse_HandlesQuotesAndPipes() {
+        String input = "echo \"hello world\" | grep world";
+        List<Command> commands = Parser.parse(input, env);
+
+        assertEquals(2, commands.size());
+        assertEquals("echo", commands.getFirst().getName());
+        assertEquals(List.of("hello world"), commands.getFirst().getArgs());
+        assertEquals("grep", commands.get(1).getName());
+        assertEquals(List.of("world"), commands.get(1).getArgs());
+    }
+
+    @Test
+    void testParse_VariableAssignment() {
+        String input = "VAR=value";
+        List<Command> commands = Parser.parse(input, env);
+
+        assertTrue(commands.isEmpty()); // Should not return a command, just set variable
+        assertEquals("value", env.getVar("VAR"));
+    }
+
+    @Test
+    void testParse_ComplexCase() {
+        String input = "echo \"Hello $USER_BOB\" | grep Alice | wc -l";
+        List<Command> commands = Parser.parse(input, env);
+
+        assertEquals(3, commands.size());
+        assertEquals("echo", commands.getFirst().getName());
+        assertEquals(List.of("Hello Bob"), commands.getFirst().getArgs());
+        assertEquals("grep", commands.get(1).getName());
+        assertEquals(List.of("Alice"), commands.get(1).getArgs());
+        assertEquals("wc", commands.get(2).getName());
+        assertEquals(List.of("-l"), commands.get(2).getArgs());
     }
 }

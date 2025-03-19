@@ -42,7 +42,6 @@ public class Command {
     public void setStdin(InputStream stdin) {
         this.stdin = stdin;
     }
-
     public void setStdout(OutputStream stdout) {
         this.stdout = stdout;
     }

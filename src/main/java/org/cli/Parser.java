@@ -54,11 +54,15 @@ public class Parser {
     // Replaces occurrences of environment variables in the token.
     private static String findVarsAndReplace(String token, Environment env) {
         // Matches variables like $VAR
-        String setVarRegex = "([^'$]*('[^']*')?[^'$]*)(\\$([^$\"']+))";
+        String setVarRegex = "('[^']*')|(\\$([^$\"']+))";
         Matcher matcher = Pattern.compile(setVarRegex).matcher(token);
-        return matcher.replaceAll(match ->
-                match.group(1).replaceAll("\\$", "\\\\\\$")  // Escape $
-                        + env.getVar(match.group(4))); // Replace with the actual variable value
+        return matcher.replaceAll(match -> {
+            String matchGroup3 = match.group(3);
+            if (matchGroup3 != null) {
+                return env.getVar(matchGroup3); // Replace with the actual variable value
+            }
+            return match.group().replaceAll("\\$", "\\\\\\$");
+        });
     }
 
     // Checks if a token is a variable assignment (e.g., VAR=value) and sets it in the environment.
