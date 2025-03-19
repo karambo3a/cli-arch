@@ -17,13 +17,11 @@ public class Environment {
 
     // Get the value of an environment variable or empty string if key is not found
     public String getVar(String key) {
-        System.out.println("getVars.key=" + key);
         return vars.getOrDefault(key, "");
     }
 
     // Set or update an environment variable
     public void setVar(String key, String value) {
-        System.out.println("setVars.key=" + key + " value=" + value);
         vars.put(key, value);
     }
 

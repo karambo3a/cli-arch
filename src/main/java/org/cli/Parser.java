@@ -45,21 +45,29 @@ public class Parser {
     }
 
     private static String evalQuotes(String token) {
-        String quoteRegex = "'((?:\\\\'|[^'])*)'|\"((?:\\\\\"|[^\"])*)\"";
+        String quoteRegex = "'((?:\\\\.|[^'])*?)'|\"((?:\\\\.|[^\"])*?)\"";
         Matcher matcher = Pattern.compile(quoteRegex).matcher(token);
         return matcher.replaceAll(match -> {
-            if (match.group(1) != null) {
-                return match.group(1).replace("\\", "\\\\").replaceAll("\\$", "\\\\\\$");
-            } else if (match.group(2) != null) {
-                return match.group(2).replaceAll("\\$", "\\\\\\$");
-            }
-            return "";
-        });
+                    if (match.group(1) != null) {
+                        // we are inside '...' ->
+                        return match.group(1)
+                                .replaceAll("\\\\", "\\\\\\\\")
+                                .replaceAll("\\$", "\\\\\\$");
+                    } else if (match.group(2) != null) {
+                        // we are inside "..."
+                        return match.group(2)
+                                .replaceAll("\\\\n", "\n")
+                                .replaceAll("\\\\t", "\t")
+                                .replaceAll("\\$", "\\\\\\$");
+                    }
+                    return "";
+                }
+        );
     }
 
     private static List<String> tokenize(String inputLine) {
         List<String> tokens = new ArrayList<>();
-        String tokenRegex = "\\||([^|\\s\"']*(\"[^\"]*\"|'[^']*')[^|\\s\"']*)+|[^|\\s\"']+";
+        String tokenRegex = "\\||([^|\\s\"']*(\"((?:\\\\.|[^\"])*?)\"|'((?:\\\\.|[^'])*?)')[^|\\s\"']*)+|[^|\\s\"']+";
         Matcher matcher = Pattern.compile(tokenRegex).matcher(inputLine);
         while (matcher.find()) {
             tokens.add(matcher.group());
