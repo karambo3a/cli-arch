@@ -30,9 +30,25 @@ Supported operations:
 5. Pipelines
     * Support for the `|` operator to pass the output of one command as input to another
 
-## Installation
+## Installation and run
+### Requirements
+* Java Development Kit (JDK) version 11 or higher installed.
+* Gradle installed for building the project.
 
+Clone the repository:
+```
+git clone https://github.com/your-username/cli-arch.git
+cd cli-arch
+```
+Run the project using Gradle:
 
+```
+./gradlew run
+```
+To run the unit tests, use:
+```
+./gradlew test
+```
 ## License
 
 This project is licensed under the [MIT license](LICENSE)
