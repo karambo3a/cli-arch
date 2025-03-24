@@ -71,8 +71,8 @@
 
 ## Class diagram
 
-![](images/class_diagram.jpg)
+![](images/class_diagram.png)
 
 ## Component diagram
 
-![](images/component_diagram.jpg)
+![](images/component_diagram.png)
