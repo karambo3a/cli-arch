@@ -73,7 +73,7 @@ class ExecutorTest {
         int exitCode = Executor.execute(command);
 
         assertEquals(0, exitCode);
-        String expected = "2 7 44 " + file.getAbsolutePath() + "\n";
+        String expected = "      2       7      44 " + file.getAbsolutePath() + "\n";
         assertEquals(expected, output.toString());
     }
 
