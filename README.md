@@ -35,16 +35,31 @@ Supported operations:
 * Java Development Kit (JDK) version 11 or higher installed.
 * Gradle installed for building the project.
 
+### First method
 Clone the repository:
 ```
-git clone https://github.com/your-username/cli-arch.git
+git clone git@github.com:karambo3a/cli-arch.git
 cd cli-arch
 ```
-Run the project using Gradle:
-
+Run the project using Gradle only:
 ```
-./gradlew run
+./gradlew runCLI
 ```
+### Second method
+Clone the repository:
+```
+git clone git@github.com:karambo3a/cli-arch.git
+cd cli-arch
+```
+Build the project using Gradle:
+```
+./gradlew runCLI
+```
+Run the project:
+```
+java -jar build/libs/cli.jar
+```
+### Tests
 To run the unit tests, use:
 ```
 ./gradlew test
@@ -58,6 +73,5 @@ This project is licensed under the [MIT license](LICENSE)
 * [Zalilova Diana](https://www.github.com/mediana105)
 * [Ivanova Arina](https://www.github.com/Arishkamu)
 * [Isaeva Ekaterina](https://www.github.com/karambo3a)
-* [Mukhametvalieva Alina](https://www.github.com/Alina-Muha)
 
 HSE SPB, AMIS-3
