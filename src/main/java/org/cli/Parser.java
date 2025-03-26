@@ -18,11 +18,16 @@ public class Parser {
      */
     public static List<Command> parse(String inputLine, Environment env) {
         List<Command> commands = new ArrayList<>();
-        List<String> tokens = tokenize(inputLine);  // Tokenize the input line
+        if (inputLine == null || inputLine.trim().isEmpty()) {
+            System.err.println("Parser error: Input cannot be empty or null.");
+            return new ArrayList<>(); // Return empty list for empty input
+        }
 
+        List<String> tokens = tokenize(inputLine);  // Tokenize the input line
         // If it's a single token, and it's a variable assignment, handle it separately
+
         if (tokens.size() == 1 && setVarIfNeed(tokens.getFirst(), env)) {
-            return new ArrayList<>();  // Return empty list if it's just a variable assignment
+            return new ArrayList<>();
         }
 
         List<String> tokensAfterVars = new ArrayList<>();
@@ -47,7 +52,9 @@ public class Parser {
         }
 
         // Add the final command (if any)
-        commands.add(new Command(singleCommand));
+        if (!singleCommand.isEmpty()) {
+            commands.add(new Command(singleCommand));
+        }
         return commands;
     }
 
@@ -59,6 +66,14 @@ public class Parser {
         return matcher.replaceAll(match -> {
             String matchGroup3 = match.group(3);
             if (matchGroup3 != null) {
+                if (matchGroup3.isEmpty()) {
+                    System.err.println("Parser error: empty variable name after $");
+                    return match.group(); // Return the original token if the variable name is empty
+                }
+                if (!env.containsVar(matchGroup3)) {
+                    System.err.println("Parser error: undefined variable: " + matchGroup3); // Return the original token if the variable name is empty
+                    return match.group();
+                }
                 return env.getVar(matchGroup3); // Replace with the actual variable value
             }
             return match.group().replaceAll("\\$", "\\\\\\$");
@@ -70,8 +85,21 @@ public class Parser {
         String setVarRegex = "([^=\"']+)=(.*)";  // Matches "VAR=value" format
         Matcher matcher = Pattern.compile(setVarRegex).matcher(token);
         if (matcher.matches()) {
+            String varName = matcher.group(1);
+            String varValue = matcher.group(2);
+
+            if (varValue.isEmpty()) {
+                System.err.println("Parser error: Variable value cannot be empty.");
+                return false;
+            }
+
+            if (varName.isEmpty()) {
+                System.err.println("Parser error: Variable name cannot be empty.");
+                return false;
+            }
+
             // Store the variable in the environment after handling quotes
-            env.setVar(matcher.group(1), evalQuotes(matcher.group(2)));
+            env.setVar(varName, evalQuotes(varValue));
             return true;
         }
         return false;
@@ -85,22 +113,20 @@ public class Parser {
     private static String evalQuotes(String token) {
         String quoteRegex = "'((?:\\\\.|[^'])*?)'|\"((?:\\\\.|[^\"])*?)\"";
         Matcher matcher = Pattern.compile(quoteRegex).matcher(token);
+        if (!matcher.matches()) {
+            System.err.println("Parser error: incorrect input: " + token);
+            return "";
+        }
         return matcher.replaceAll(match -> {
-                    if (match.group(1) != null) {
-                        // Inside '...' single quotes (strong quoting) - escape \ and $
-                        return match.group(1)
-                                .replaceAll("\\\\", "\\\\\\\\")
-                                .replaceAll("\\$", "\\\\\\$");
-                    } else if (match.group(2) != null) {
-                        // Inside "..." double quotes (weak quoting) - process escape sequences
-                        return match.group(2)
-                                .replaceAll("\\\\n", "\n")
-                                .replaceAll("\\\\t", "\t")
-                                .replaceAll("\\$", "\\\\\\$");
-                    }
-                    return "";
-                }
-        );
+            if (match.group(1) != null) {
+                // Inside '...' single quotes (strong quoting) - escape \ and $
+                return match.group(1).replaceAll("\\\\", "\\\\\\\\").replaceAll("\\$", "\\\\\\$");
+            } else if (match.group(2) != null) {
+                // Inside "..." double quotes (weak quoting) - process escape sequences
+                return match.group(2).replaceAll("\\\\n", "\n").replaceAll("\\\\t", "\t").replaceAll("\\$", "\\\\\\$");
+            }
+            return "";
+        });
     }
 
     /**

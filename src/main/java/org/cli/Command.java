@@ -27,12 +27,12 @@ public class Command {
 
     public Command(List<String> tokens) {
         if (tokens.isEmpty()) {
-            throw new IllegalArgumentException("Empty command");
+            System.err.println("Command error: Empty command");
         }
         this.name = tokens.getFirst();
         this.args = List.copyOf(tokens.subList(1, tokens.size()));
         if (!checkNumberOfArguments()) {
-            throw new IllegalArgumentException("Invalid number of arguments");
+            System.err.println("Error: Invalid number of arguments for command: " + name);
         }
         this.stdin = System.in;
         this.stdout = System.out;
