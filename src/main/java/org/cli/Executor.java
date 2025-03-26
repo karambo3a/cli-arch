@@ -6,16 +6,15 @@ import java.util.function.Function;
 
 public class Executor {
 
-    // Map of methods for builtin commands
-    private static final Map<String, Function<Command, Integer>> BUILTIN_FUNCTIONS = Map.of(
-            "cat", Executor::executeCat,
-            "echo", Executor::executeEcho,
-            "wc", Executor::executeWc,
-            "pwd", Executor::executePwd
-    );
-
-
-    // Method to execute builtin and external commands
+    /**
+     * Executes a command depending on whether it is a builtin or external command
+     * Determines command type and delegate to executeExternal or executeBuiltin
+     *
+     * @param command The command to execute, containing both the command name and arguments. Must not be null.
+     * @return        The exit status of the executed command:
+     *                  0 for successful execution
+     *                  Non-zero for errors
+     */
     public static int execute(Command command) {
         if (command.isBuiltin()) {
             return executeBuiltin(command);
@@ -25,7 +24,7 @@ public class Executor {
 
 
     // Method to execute the external command
-    public static int executeExternal(Command command) {
+    private static int executeExternal(Command command) {
         ProcessBuilder pb = new ProcessBuilder(command.getName());
         pb.command().addAll(command.getArgs());
         pb.redirectErrorStream(true);
@@ -181,4 +180,12 @@ public class Executor {
         System.err.println(command.getName() + ": unknown command");
         return 1;
     }
+
+    // Map of methods for builtin commands
+    private static final Map<String, Function<Command, Integer>> BUILTIN_FUNCTIONS = Map.of(
+            "cat", Executor::executeCat,
+            "echo", Executor::executeEcho,
+            "wc", Executor::executeWc,
+            "pwd", Executor::executePwd
+    );
 }

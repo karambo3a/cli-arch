@@ -14,7 +14,7 @@ public class Parser {
      *
      * @param inputLine the raw input string from the user
      * @param env       the environment containing variable mappings
-     * @return a list of parsed Command objects
+     * @return          a list of parsed Command objects
      */
     public static List<Command> parse(String inputLine, Environment env) {
         List<Command> commands = new ArrayList<>();

@@ -6,12 +6,25 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-// Class for processing pipelines
+// Class for executing pipelines
 public class Pipeline {
 
-    // Method to execute pipe
+    /**
+     * Executes a pipeline of commands where the output of each command is passed as input to the next one,
+     * similar to Unix shell pipes (|). Handles both single commands and command chains.
+     *
+     * For a single command:
+     *  If the command is "exit", terminates the program with status 0
+     *  Otherwise executes the command normally
+     * For multiple commands:
+     *  Connects stdout of each process to stdin of the next process
+     *  Executes the command normally
+     *
+     * @param commands      list of Command objects representing the pipeline
+     * @return              exit status of the last command in the pipeline
+     */
     public static int pipe(List<Command> commands) {
-        // One command
+        // Single command
         if (commands.size() == 1) {
             Command command = commands.getFirst();
             // Command is exit command
