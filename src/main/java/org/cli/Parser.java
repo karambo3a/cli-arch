@@ -66,14 +66,6 @@ public class Parser {
         return matcher.replaceAll(match -> {
             String matchGroup3 = match.group(3);
             if (matchGroup3 != null) {
-                if (matchGroup3.isEmpty()) {
-                    System.err.println("Parser error: empty variable name after $");
-                    return match.group(); // Return the original token if the variable name is empty
-                }
-                if (!env.containsVar(matchGroup3)) {
-                    System.err.println("Parser error: undefined variable: " + matchGroup3); // Return the original token if the variable name is empty
-                    return match.group();
-                }
                 return env.getVar(matchGroup3); // Replace with the actual variable value
             }
             return match.group().replaceAll("\\$", "\\\\\\$");
@@ -93,11 +85,6 @@ public class Parser {
                 return false;
             }
 
-            if (varName.isEmpty()) {
-                System.err.println("Parser error: Variable name cannot be empty.");
-                return false;
-            }
-
             // Store the variable in the environment after handling quotes
             env.setVar(varName, evalQuotes(varValue));
             return true;
@@ -113,10 +100,6 @@ public class Parser {
     private static String evalQuotes(String token) {
         String quoteRegex = "'((?:\\\\.|[^'])*?)'|\"((?:\\\\.|[^\"])*?)\"";
         Matcher matcher = Pattern.compile(quoteRegex).matcher(token);
-        if (!matcher.matches()) {
-            System.err.println("Parser error: incorrect input: " + token);
-            return "";
-        }
         return matcher.replaceAll(match -> {
             if (match.group(1) != null) {
                 // Inside '...' single quotes (strong quoting) - escape \ and $

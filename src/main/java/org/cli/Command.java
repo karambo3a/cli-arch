@@ -2,6 +2,7 @@ package org.cli;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -17,22 +18,21 @@ public class Command {
     private OutputStream stdout;
 
     // Map defining the expected number of arguments for each built-in command
-    private static final Map<String, Integer> BUILTIN_COMMANDS_AND_ARG_COUNTS = Map.of(
-            "cat", 1,
-            "echo", -1, // -1 means any number of arguments
-            "pwd", 0,
-            "wc", 1,
-            "exit", 0
-    );
+    private static final Map<String, Integer> BUILTIN_COMMANDS_AND_ARG_COUNTS = Map.of("cat", 1, "echo", -1, // -1 means any number of arguments
+            "pwd", 0, "wc", 1, "exit", 0);
 
     public Command(List<String> tokens) {
         if (tokens.isEmpty()) {
             System.err.println("Command error: Empty command");
-        }
-        this.name = tokens.getFirst();
-        this.args = List.copyOf(tokens.subList(1, tokens.size()));
-        if (!checkNumberOfArguments()) {
-            System.err.println("Error: Invalid number of arguments for command: " + name);
+            this.args = Collections.emptyList();
+            this.name = "";
+        } else {
+            this.args = List.copyOf(tokens.subList(1, tokens.size()));
+
+            this.name = tokens.getFirst();
+            if (!checkNumberOfArguments()) {
+                System.err.println("Error: Invalid number of arguments for command: " + name);
+            }
         }
         this.stdin = System.in;
         this.stdout = System.out;
@@ -42,6 +42,7 @@ public class Command {
     public void setStdin(InputStream stdin) {
         this.stdin = stdin;
     }
+
     public void setStdout(OutputStream stdout) {
         this.stdout = stdout;
     }
@@ -89,11 +90,6 @@ public class Command {
 
     @Override
     public String toString() {
-        return "Command{" +
-                "name='" + name + '\'' +
-                ", args=" + args +
-                ", stdin=" + stdin +
-                ", stdout=" + stdout +
-                '}';
+        return "Command{" + "name='" + name + '\'' + ", args=" + args + ", stdin=" + stdin + ", stdout=" + stdout + '}';
     }
 }

@@ -1,5 +1,7 @@
 package org.cli;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -88,13 +90,7 @@ public class ParserTest {
 
     @Order(1)
     @ParameterizedTest
-    @CsvSource({
-            "USER, Alice, Alice",
-            "HOME, /home/Alice, /home/Alice",
-            "withQuotes, aaa\"bbb\"ccc, aaabbbccc",
-            "x, ec, ec",
-            "y, \"ho 123\", ho 123"
-    })
+    @CsvSource({"USER, Alice, Alice", "HOME, /home/Alice, /home/Alice", "withQuotes, aaa\"bbb\"ccc, aaabbbccc", "x, ec, ec", "y, \"ho 123\", ho 123"})
     void testSetVarIfNeed_ValidAssignment(String key, String value, String expect) throws InvocationTargetException, IllegalAccessException {
         String input = key + "=" + value;
         boolean result1 = (boolean) setVarIfNeed.invoke(null, input, env);
@@ -120,13 +116,7 @@ public class ParserTest {
     }
 
     @ParameterizedTest
-    @CsvSource({
-            "$USER_BOB, Bob",
-            "someLetters$HOME_BOB, someLetters/home/bob",
-            "\"$USER_BOB\", \"Bob\"",
-            "Hell'$USER_BOB'o, Hell'$USER_BOB'o",
-            "more'quotes'for$USER_BOB\"endBнQuote\"eee, more'quotes'forBob\"endBнQuote\"eee"
-    })
+    @CsvSource({"$USER_BOB, Bob", "someLetters$HOME_BOB, someLetters/home/bob", "\"$USER_BOB\", \"Bob\"", "Hell'$USER_BOB'o, Hell'$USER_BOB'o", "more'quotes'for$USER_BOB\"endBнQuote\"eee, more'quotes'forBob\"endBнQuote\"eee"})
     void testFindVarsAndReplace_WithVariables(String token, String expect) throws InvocationTargetException, IllegalAccessException {
         System.out.println(token);
         String result = (String) findVarsAndReplace.invoke(null, token, env);
@@ -143,13 +133,7 @@ public class ParserTest {
     }
 
     @ParameterizedTest
-    @CsvSource({
-            "'Hello $USER', Hello $USER",
-            "\"Hello $USER_BOB\", Hello $USER_BOB",
-            "'$HOME_BOB' \"$USER_BOB\", $HOME_BOB $USER_BOB",
-            "letters'Hello $USER'letters, lettersHello $USERletters",
-            "aaa\"bbb\"ccc'ddd'eee, aaabbbcccdddeee"
-    })
+    @CsvSource({"'Hello $USER', Hello $USER", "\"Hello $USER_BOB\", Hello $USER_BOB", "'$HOME_BOB' \"$USER_BOB\", $HOME_BOB $USER_BOB", "letters'Hello $USER'letters, lettersHello $USERletters", "aaa\"bbb\"ccc'ddd'eee, aaabbbcccdddeee"})
     void testEvalQuotes_SingleQuotes(String input, String expect) throws InvocationTargetException, IllegalAccessException {
         String result = (String) evalQuotes.invoke(null, input);
 
@@ -163,7 +147,6 @@ public class ParserTest {
 
         assertEquals("Line1\nLine2\tTabbed", result);
     }
-
 
 
     @Test
@@ -221,5 +204,35 @@ public class ParserTest {
         assertEquals(List.of("Alice"), commands.get(1).getArgs());
         assertEquals("wc", commands.get(2).getName());
         assertEquals(List.of("-l"), commands.get(2).getArgs());
+    }
+
+    @Test
+    void testEmptyVariableValue() throws InvocationTargetException, IllegalAccessException {
+        String input = "VAR=";
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+        boolean result = (boolean) setVarIfNeed.invoke(null, input, env);
+        assertFalse(result);
+        assertTrue(errContent.toString().contains("Parser error: Variable value cannot be empty."));
+    }
+    
+    @Test
+    void testEmptyInput() {
+        String input = "  ";
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+        List<Command> commands = Parser.parse(input, env);
+        assertTrue(commands.isEmpty());
+        assertTrue(errContent.toString().contains("Parser error: Input cannot be empty or null."));
+    }
+
+    @Test
+    void testNullInput() {
+        String input = null;
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+        List<Command> commands = Parser.parse(input, env);
+        assertTrue(commands.isEmpty());
+        assertTrue(errContent.toString().contains("Parser error: Input cannot be empty or null."));
     }
 }

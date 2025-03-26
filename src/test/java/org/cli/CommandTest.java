@@ -25,14 +25,18 @@ class CommandTest {
 
     @Test
     void testEmptyCommand() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> new Command(List.of()));
-        assertEquals("Empty command", exception.getMessage());
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+        new Command(List.of());
+        assertTrue(errContent.toString().contains("Command error: Empty command"));
     }
 
     @Test
     void testInvalidNumberOfArgumentsForCat() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> new Command(List.of("cat", "file1", "file2")));
-        assertEquals("Invalid number of arguments", exception.getMessage());
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+        new Command(List.of("cat", "file1", "file2"));
+        assertTrue(errContent.toString().contains("Invalid number of arguments for command: cat"));
     }
 
     @Test
