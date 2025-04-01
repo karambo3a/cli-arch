@@ -1,8 +1,13 @@
 package org.cli;
 
 import java.io.*;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 
 public class Executor {
 
@@ -174,6 +179,64 @@ public class Executor {
         return exitCode;
     }
 
+    // Method to execute the `grep` command
+    private static int executeGrep(Command command) {
+        OutputStream output = command.getStdout();
+        GrepArgs grepArgs = new GrepArgs();
+        JCommander grepCommander = JCommander.newBuilder()
+                .addObject(grepArgs)
+                .build();
+        grepCommander.parse(command.getArgs().toArray(new String[0]));
+
+        int exitCode = 0;
+        String fileName;
+        InputStream input = null;
+        try {
+            if (grepArgs.getFileNames().isEmpty()) {
+                input = command.getStdin();
+            } else {
+                fileName = grepArgs.getFileNames().getFirst();
+                input = new FileInputStream(fileName);
+            }
+            StringBuilder result = grepExecutionDetails(input, grepArgs);
+            output.write(result.toString().getBytes());
+            // Flush the output stream to ensure data is written
+            output.flush();
+        } catch (IOException e) {
+            System.err.println("grep: " + e.getMessage());
+            exitCode = 1;
+        } finally {
+            if (input != null && input != System.in) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    System.err.println("grep: " + e.getMessage());
+                    exitCode = 1;
+                }
+            }
+        }
+        return exitCode;
+    }
+
+    private static StringBuilder grepExecutionDetails(InputStream input, GrepArgs grepArgs) throws IOException {
+        Pattern pattern = grepArgs.getPattern();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        String line;
+        int additionalLineCnt = -1;
+        StringBuilder result = new StringBuilder();
+        while ((line = reader.readLine()) != null) {
+            Matcher matcher = pattern.matcher(line);
+            if (matcher.find()) {
+                result.append(line).append("\n");
+                additionalLineCnt = grepArgs.getAdditionalLines();
+            } else if (additionalLineCnt > 0) {
+                result.append(line).append("\n");
+                additionalLineCnt--;
+            }
+        }
+        return result;
+    }
+
 
     // Process unknown builtin command
     private static int unknownBuiltinCommand(Command command) {
@@ -186,6 +249,43 @@ public class Executor {
             "cat", Executor::executeCat,
             "echo", Executor::executeEcho,
             "wc", Executor::executeWc,
-            "pwd", Executor::executePwd
+            "pwd", Executor::executePwd,
+            "grep", Executor::executeGrep
     );
+}
+
+class GrepArgs {
+    @Parameter(names = "-w", description = "Search only whole word")
+    private boolean wholeWord;
+
+    @Parameter(names = "-i", description = "Case-insensitive search")
+    private boolean caseInsensitive;
+
+    @Parameter(names = "-A", arity = 1, description = "Print 'A' lines after match")
+    private int additionalLines = 0;
+
+    // always assume that pattern goes before files
+    @Parameter(description = "Pattern and files to search")
+    private List<String> positionalParams;
+
+    public List<String> getFileNames() {
+        return positionalParams.subList(1, positionalParams.size());
+    }
+
+    public int getAdditionalLines() {
+        return additionalLines;
+    }
+
+    public Pattern getPattern() {
+        String patternString;
+        if (wholeWord) {
+            patternString = "\\b" + positionalParams.getFirst() + "\\b";
+        } else {
+            patternString = positionalParams.getFirst();
+        }
+        if (caseInsensitive) {
+            return Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
+        }
+        return Pattern.compile(patternString);
+    }
 }

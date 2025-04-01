@@ -19,7 +19,7 @@ public class Command {
 
     // Map defining the expected number of arguments for each built-in command
     private static final Map<String, Integer> BUILTIN_COMMANDS_AND_ARG_COUNTS = Map.of("cat", 1, "echo", -1, // -1 means any number of arguments
-            "pwd", 0, "wc", 1, "exit", 0);
+            "pwd", 0, "wc", 1, "exit", 0, "grep", -1);
 
     public Command(List<String> tokens) {
         if (tokens.isEmpty()) {
