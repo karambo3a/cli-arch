@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 
 public class Executor {
 
@@ -182,27 +183,32 @@ public class Executor {
     // Method to execute the `grep` command
     private static int executeGrep(Command command) {
         OutputStream output = command.getStdout();
+        int exitCode = 0;
+        InputStream input = null;
+
         GrepArgs grepArgs = new GrepArgs();
         JCommander grepCommander = JCommander.newBuilder()
                 .addObject(grepArgs)
                 .build();
-        grepCommander.parse(command.getArgs().toArray(new String[0]));
-
-        int exitCode = 0;
-        String fileName;
-        InputStream input = null;
         try {
+            // parse grep arguments using JCommander
+            grepCommander.parse(command.getArgs().toArray(new String[0]));
+
+            // specify inputStream
             if (grepArgs.getFileNames().isEmpty()) {
                 input = command.getStdin();
             } else {
-                fileName = grepArgs.getFileNames().getFirst();
+                String fileName = grepArgs.getFileNames().getFirst();
                 input = new FileInputStream(fileName);
             }
+
+            // Call function for detailed grep execution
             StringBuilder result = grepExecutionDetails(input, grepArgs);
+
             output.write(result.toString().getBytes());
             // Flush the output stream to ensure data is written
             output.flush();
-        } catch (IOException e) {
+        } catch (IOException | ParameterException e) { // add exception from JCommander parser
             System.err.println("grep: " + e.getMessage());
             exitCode = 1;
         } finally {
@@ -219,19 +225,31 @@ public class Executor {
     }
 
     private static StringBuilder grepExecutionDetails(InputStream input, GrepArgs grepArgs) throws IOException {
+        // return pattern for grep consider arguments
         Pattern pattern = grepArgs.getPattern();
+
         BufferedReader reader = new BufferedReader(new InputStreamReader(input));
         String line;
-        int additionalLineCnt = -1;
+
+        // counter of remaining additional lines after match
+        int additionalLineCnt = 0;
+
         StringBuilder result = new StringBuilder();
         while ((line = reader.readLine()) != null) {
             Matcher matcher = pattern.matcher(line);
-            if (matcher.find()) {
+            if (matcher.find()) { // check if was match in current line
                 result.append(line).append("\n");
+                // update additionalLineCnt
                 additionalLineCnt = grepArgs.getAdditionalLines();
-            } else if (additionalLineCnt > 0) {
+            } else if (additionalLineCnt > 0) { // if there was no match but need additional line
                 result.append(line).append("\n");
                 additionalLineCnt--;
+
+                // after printing last additional line add break.
+                // Will reach only if no cross with other match
+                if (additionalLineCnt == 0) {
+                    result.append("------\n");
+                }
             }
         }
         return result;
@@ -254,6 +272,7 @@ public class Executor {
     );
 }
 
+// class specifically for parsing arguments for grep using JCommander
 class GrepArgs {
     @Parameter(names = "-w", description = "Search only whole word")
     private boolean wholeWord;
@@ -268,6 +287,7 @@ class GrepArgs {
     @Parameter(description = "Pattern and files to search")
     private List<String> positionalParams;
 
+    // return list of fileNames for grep. Currently, will process only first of them
     public List<String> getFileNames() {
         return positionalParams.subList(1, positionalParams.size());
     }
@@ -276,13 +296,16 @@ class GrepArgs {
         return additionalLines;
     }
 
+    // return Pattern for grep match
     public Pattern getPattern() {
         String patternString;
+        // update it for wholeWord
         if (wholeWord) {
             patternString = "\\b" + positionalParams.getFirst() + "\\b";
         } else {
             patternString = positionalParams.getFirst();
         }
+        // update for case sensation
         if (caseInsensitive) {
             return Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
         }
