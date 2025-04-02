@@ -14,8 +14,7 @@
     * enum/list: builtin_commands
     * args: List<Str> - список параметров команды
     * stdin, stdout - не являются аргументами, задаются/изменяются отдельно в пайплайне или стандартные
-    * constructor, isBuiltin, isExit, setStdin, setStdout
-    * checkNumberOfArguments for each builtin command (вызывается в конструкторе)
+    * constructor, setStdin, setStdout, getArgs, getName, getStdin, getStdout
 * Environment:
     * vars: map[str, str]
     * getter, setter, contains(key)
