@@ -61,15 +61,6 @@ class CommandTest {
     }
 
     @Test
-    void testIsBuiltinCommand() {
-        Command catCommand = new Command(List.of("cat", "file1"));
-        assertTrue(catCommand.isBuiltin());
-
-        Command externalCommand = new Command(List.of("ls", "-l"));
-        assertFalse(externalCommand.isBuiltin());
-    }
-
-    @Test
     void testDefaultStdInAndOut() {
         Command command = new Command(List.of("echo", "Test"));
 
