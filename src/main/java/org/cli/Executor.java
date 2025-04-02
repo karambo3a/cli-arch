@@ -22,7 +22,7 @@ public class Executor {
      *                  Non-zero for errors
      */
     public static int execute(Command command) {
-        if (command.isBuiltin()) {
+        if (BUILTIN_FUNCTIONS.containsKey(command.getName())) {
             return executeBuiltin(command);
         }
         return executeExternal(command);

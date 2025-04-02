@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 // Command class represents a command in the CLI
 public class Command {
@@ -17,10 +16,6 @@ public class Command {
     private InputStream stdin;
     private OutputStream stdout;
 
-    // Map defining the expected number of arguments for each built-in command
-    private static final Map<String, Integer> BUILTIN_COMMANDS_AND_ARG_COUNTS = Map.of("cat", 1, "echo", -1, // -1 means any number of arguments
-            "pwd", 0, "wc", 1, "exit", 0, "grep", -1);
-
     public Command(List<String> tokens) {
         if (tokens.isEmpty()) {
             System.err.println("Command error: Empty command");
@@ -28,11 +23,7 @@ public class Command {
             this.name = "";
         } else {
             this.args = List.copyOf(tokens.subList(1, tokens.size()));
-
             this.name = tokens.getFirst();
-            if (!checkNumberOfArguments()) {
-                System.err.println("Error: Invalid number of arguments for command: " + name);
-            }
         }
         this.stdin = System.in;
         this.stdout = System.out;
@@ -69,23 +60,6 @@ public class Command {
     // Method to check if the command is "exit"
     public boolean isExit() {
         return "exit".equals(name);
-    }
-
-    // Method to check if this is a built-in command
-    public boolean isBuiltin() {
-        return BUILTIN_COMMANDS_AND_ARG_COUNTS.containsKey(name);
-    }
-
-    // Method to validate the number of arguments for built-in commands
-    private boolean checkNumberOfArguments() {
-        if (!isBuiltin()) {
-            return true; // External commands are not checked
-        }
-
-        int expectedArgs = BUILTIN_COMMANDS_AND_ARG_COUNTS.get(name);
-        // If expectedArgs == -1, any number of arguments is allowed
-        // If it is pipeline number of arguments can be one less
-        return expectedArgs == -1 || expectedArgs == args.size() || expectedArgs - 1 == args.size();
     }
 
     @Override
