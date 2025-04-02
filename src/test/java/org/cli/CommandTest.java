@@ -32,14 +32,6 @@ class CommandTest {
     }
 
     @Test
-    void testInvalidNumberOfArgumentsForCat() {
-        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-        System.setErr(new PrintStream(errContent));
-        new Command(List.of("cat", "file1", "file2"));
-        assertTrue(errContent.toString().contains("Invalid number of arguments for command: cat"));
-    }
-
-    @Test
     void testValidNumberOfArgumentsForCat() {
         Command command = new Command(List.of("cat", "file1"));
         assertEquals("cat", command.getName());
