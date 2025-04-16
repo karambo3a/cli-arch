@@ -29,12 +29,14 @@ Supported operations:
     * If an unknown command is entered, the interpreter should attempt to execute it as an external program.
 5. Pipelines
     * Support for the `|` operator to pass the output of one command as input to another
-
+---
 ## Installation and run
 ### Requirements
 * Java Development Kit (JDK) version 11 or higher installed.
 * Gradle installed for building the project.
 
+---
+### First method
 Clone the repository:
 ```
 git clone https://github.com/your-username/cli-arch.git
@@ -43,12 +45,32 @@ cd cli-arch
 Run the project using Gradle:
 
 ```
-./gradlew run
+./gradlew runCLI
 ```
+
+---
+### Second method
+Clone the repository:
+```
+git clone https://github.com/your-username/cli-arch.git
+cd cli-arch
+```
+Build the project using Gradle:
+```
+./gradlew build
+```
+Run the project:
+
+```
+java -jar build/libs/cli.jar
+```
+---
+### Tests
 To run the unit tests, use:
 ```
 ./gradlew test
 ```
+---
 ## License
 
 This project is licensed under the [MIT license](LICENSE)
@@ -58,6 +80,5 @@ This project is licensed under the [MIT license](LICENSE)
 * [Zalilova Diana](https://www.github.com/mediana105)
 * [Ivanova Arina](https://www.github.com/Arishkamu)
 * [Isaeva Ekaterina](https://www.github.com/karambo3a)
-* [Mukhametvalieva Alina](https://www.github.com/Alina-Muha)
 
 HSE SPB, AMIS-3
