@@ -20,10 +20,13 @@ Supported operations:
     * exit — exit the interpreter.
 2. Full and weak quoting
     ```
-    > echo ’What do you get if you multiply six by nine?\n Six by nine. Forty two.’
+    > echo 'What do you get if you multiply six by nine?\n Six by nine. Forty two.'
+    What do you get if you multiply six by nine?\n Six by nine. Forty two.
     ```
     ```
     > echo "What do you get if you multiply six by nine?\n Six by nine. Forty two."
+    What do you get if you multiply six by nine?
+     Six by nine. Forty two.
     ```
 3. Environment and variables
     ```
