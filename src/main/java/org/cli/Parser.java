@@ -76,7 +76,7 @@ public class Parser {
             if (matchGroup3 != null) {
                 return env.getVar(matchGroup3); // Replace with the actual variable value
             }
-            return Matcher.quoteReplacement(match.group().replaceAll("\\$", "\\\\\\$"));
+            return Matcher.quoteReplacement(match.group());
         });
     }
 
@@ -111,7 +111,7 @@ public class Parser {
         return matcher.replaceAll(match -> {
             if (match.group(1) != null) {
                 // Inside '...' single quotes (strong quoting) - escape \ and $
-                return Matcher.quoteReplacement(match.group(1).replaceAll("\\$", "\\\\\\$"));
+                return Matcher.quoteReplacement(match.group(1));
             } else if (match.group(2) != null) {
                 // Inside "..." double quotes (weak quoting) - process escape sequences
                 return match.group(2).replaceAll("\\\\n", "\n").replaceAll("\\\\t", "\t").replaceAll("\\$", "\\\\\\$");
