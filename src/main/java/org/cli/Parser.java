@@ -23,6 +23,14 @@ public class Parser {
             return new ArrayList<>(); // Return empty list for empty input
         }
 
+        // Matches not closed quotes
+        String notClosedQuotes = "([^']*'([^']*('[^']*')*)*)|((\\\\\"|[^\"])*\"((\\\\\"|[^\"\\\\])*(\"(\\\\\"|[^\"])*\")*)*)";
+        Matcher matchNotClosed = Pattern.compile(notClosedQuotes).matcher(inputLine);
+        if (matchNotClosed.matches()) {
+            System.err.println("Parser error: Unclosed quotes.");
+            return new ArrayList<>(); // Return empty list for empty input
+        }
+
         List<String> tokens = tokenize(inputLine);  // Tokenize the input line
         // If it's a single token, and it's a variable assignment, handle it separately
 
@@ -68,7 +76,7 @@ public class Parser {
             if (matchGroup3 != null) {
                 return env.getVar(matchGroup3); // Replace with the actual variable value
             }
-            return match.group().replaceAll("\\$", "\\\\\\$");
+            return Matcher.quoteReplacement(match.group());
         });
     }
 
@@ -98,12 +106,12 @@ public class Parser {
      * - Double quotes: Allows escape sequences (\n, \t) but not variable substitution.
      */
     private static String evalQuotes(String token) {
-        String quoteRegex = "'((?:\\\\.|[^'])*?)'|\"((?:\\\\.|[^\"])*?)\"";
+        String quoteRegex = "'([^']*)'|\"((?:\\\\.|[^\"])*?)\"";
         Matcher matcher = Pattern.compile(quoteRegex).matcher(token);
         return matcher.replaceAll(match -> {
             if (match.group(1) != null) {
                 // Inside '...' single quotes (strong quoting) - escape \ and $
-                return match.group(1).replaceAll("\\\\", "\\\\\\\\").replaceAll("\\$", "\\\\\\$");
+                return Matcher.quoteReplacement(match.group(1));
             } else if (match.group(2) != null) {
                 // Inside "..." double quotes (weak quoting) - process escape sequences
                 return match.group(2).replaceAll("\\\\n", "\n").replaceAll("\\\\t", "\t").replaceAll("\\$", "\\\\\\$");
@@ -124,7 +132,7 @@ public class Parser {
         // - Matches pipes (|) separately
         // - Matches sequences of characters that include quotes
         // - Matches other standard tokens
-        String tokenRegex = "\\||([^|\\s\"']*(\"((?:\\\\.|[^\"])*?)\"|'((?:\\\\.|[^'])*?)')[^|\\s\"']*)+|[^|\\s\"']+";
+        String tokenRegex = "\\||([^|\\s\"']*(\"((?:\\\\.|[^\"])*?)\"|'([^']*)')[^|\\s\"']*)+|[^|\\s\"']+";
         Matcher matcher = Pattern.compile(tokenRegex).matcher(inputLine);
         while (matcher.find()) {
             tokens.add(matcher.group());
